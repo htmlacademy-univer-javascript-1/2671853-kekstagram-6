@@ -1,4 +1,6 @@
 import { generatePhotos } from './data.js';
+import { drawPicture } from './draw_picture.js';
 
 const photos = generatePhotos();
-console.log('Generated photos:', photos);
+
+drawPicture(photos);
