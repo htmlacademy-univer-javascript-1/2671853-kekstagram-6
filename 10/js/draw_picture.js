@@ -1,30 +1,25 @@
 import { openBigPicture } from './big-picture.js';
-const drawPicture = (photos) => {
 
-  const pictureTemplate = document.querySelector('#picture').content.querySelector('.picture');
+const picturesContainer = document.querySelector('.pictures');
+const pictureTemplate = document.querySelector('#picture').content.querySelector('.picture');
 
-  const picturesContainer = document.querySelector('.pictures');
-
+function renderPictures(data) {
   const fragment = document.createDocumentFragment();
 
-  photos.forEach(({ url, likes, comments, description }) => {
-    const pictureElement = pictureTemplate.cloneNode(true);
+  data.forEach((photo) => {
+    const element = pictureTemplate.cloneNode(true);
+    element.querySelector('.picture__img').src = photo.url;
+    element.querySelector('.picture__likes').textContent = photo.likes;
+    element.querySelector('.picture__comments').textContent = photo.comments.length;
 
-    const imgElement = pictureElement.querySelector('.picture__img');
-    imgElement.src = url;
-    imgElement.alt = description;
-
-    pictureElement.querySelector('.picture__likes').textContent = likes;
-    pictureElement.querySelector('.picture__comments').textContent = comments.length;
-
-    imgElement.addEventListener('click', () => {
-      openBigPicture({ url, likes, comments, description }); // вызываем полноразмерный просмотр
+    element.addEventListener('click', () => {
+      openBigPicture(photo);
     });
 
-    fragment.appendChild(pictureElement);
+    fragment.appendChild(element);
   });
 
   picturesContainer.appendChild(fragment);
-};
+}
 
-export { drawPicture };
+export { renderPictures };
