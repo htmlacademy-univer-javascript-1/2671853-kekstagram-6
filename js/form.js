@@ -87,7 +87,7 @@ const getHashtagErrorMessage = (value) => {
     }
 
     if (!hashtag.startsWith('#')) {
-      return `Хэш-тег "${hashtag}" должен начинаться с символа #`;
+      return 'Хэш-тег должен начинаться с символа #';
     }
 
     if (hashtag.length > MAX_HASHTAG_LENGTH) {
@@ -96,11 +96,11 @@ const getHashtagErrorMessage = (value) => {
 
     if (!HASHTAG_REGEX.test(hashtag)) {
       const invalidChars = hashtag.slice(1).replace(/[a-zа-яё0-9]/gi, '');
-      return `Хэш-тег "${hashtag}" содержит недопустимые символы: ${invalidChars || 'спецсимволы'}`;
+      return `Хэш-тег содержит недопустимые символы: ${invalidChars || 'спецсимволы'}`;
     }
 
     if (seenHashtags.has(lowerCaseHashtag)) {
-      return `Хэш-тег "${hashtag}" повторяется`;
+      return 'Хэш-тег повторяется';
     }
     seenHashtags.add(lowerCaseHashtag);
   }
