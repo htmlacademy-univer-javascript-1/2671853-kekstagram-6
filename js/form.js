@@ -1,4 +1,4 @@
-
+import { initImageEditor, resetImageEditor } from './image-editor.js';
 const MAX_HASHTAG_COUNT = 5;
 const MAX_HASHTAG_LENGTH = 20;
 const MAX_COMMENT_LENGTH = 140;
@@ -141,6 +141,7 @@ const openForm = () => {
   overlay.classList.remove('hidden');
   body.classList.add('modal-open');
   document.addEventListener('keydown', onDocumentKeydown);
+  initImageEditor();
 };
 
 const closeForm = () => {
@@ -151,6 +152,7 @@ const closeForm = () => {
   form.reset();
   fileInput.value = '';
   pristine.reset();
+  resetImageEditor();
 };
 
 fileInput.addEventListener('change', () => {
