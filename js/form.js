@@ -1,4 +1,7 @@
 import { initImageEditor, resetImageEditor } from './image-editor.js';
+import { sendPhoto } from './api.js';
+import { showSuccess, showError} from './messages.js';
+
 const MAX_HASHTAG_COUNT = 5;
 const MAX_HASHTAG_LENGTH = 20;
 const MAX_COMMENT_LENGTH = 140;
@@ -8,6 +11,7 @@ const form = document.querySelector('.img-upload__form');
 const fileInput = document.querySelector('.img-upload__input');
 const overlay = document.querySelector('.img-upload__overlay');
 const cancelButton = document.querySelector('.img-upload__cancel');
+const submitButton = document.querySelector('.img-upload__submit');
 const body = document.body;
 const hashtagInput = form.querySelector('.text__hashtags');
 const commentInput = form.querySelector('.text__description');
@@ -28,7 +32,7 @@ const validateHashtags = (value) => {
     return true;
   }
 
-  const hashtags = inputText.split(/\s+/).filter((tag)=> tag !== '');
+  const hashtags = inputText.split(/\s+/).filter((tag) => tag !== '');
 
   if (hashtags.length > MAX_HASHTAG_COUNT) {
     return false;
@@ -71,7 +75,7 @@ const getHashtagErrorMessage = (value) => {
     return '';
   }
 
-  const hashtags = inputText.split(/\s+/).filter((tag)=> tag !== '');
+  const hashtags = inputText.split(/\s+/).filter((tag) => tag !== '');
 
   if (hashtags.length > MAX_HASHTAG_COUNT) {
     return `Нельзя указать больше ${MAX_HASHTAG_COUNT} хэш-тегов. У вас: ${hashtags.length}`;
@@ -127,8 +131,54 @@ pristine.addValidator(
   validateComment,
   getCommentErrorMessage
 );
+
+const blockSubmitButton = () => {
+  submitButton.disabled = true;
+  submitButton.textContent = 'Публикую...';
+};
+
+const unblockSubmitButton = () => {
+  submitButton.disabled = false;
+  submitButton.textContent = 'Опубликовать';
+};
+
+const onFormSubmit = async (evt) => {
+  evt.preventDefault();
+
+  const isValid = pristine.validate();
+
+  if (!isValid) {
+    pristine.validate(hashtagInput);
+    pristine.validate(commentInput);
+    return;
+  }
+
+  blockSubmitButton();
+
+  const formData = new FormData(evt.target);
+
+  try {
+    await sendPhoto(formData);
+
+    showSuccess();
+    closeForm();
+
+  } catch (error) {
+
+    showError(error.message, 'Попробовать ещё раз');
+
+  } finally {
+    unblockSubmitButton();
+  }
+};
+
 const onDocumentKeydown = (evt) => {
   if (evt.key === 'Escape') {
+    const errorMessage = document.querySelector('.error');
+    if (errorMessage) {
+      return;
+    }
+
     if (document.activeElement === hashtagInput || document.activeElement === commentInput) {
       return;
     }
@@ -155,41 +205,26 @@ const closeForm = () => {
   resetImageEditor();
 };
 
-fileInput.addEventListener('change', () => {
-  openForm();
-});
+const initForm = () => {
+  fileInput.addEventListener('change', openForm);
+  cancelButton.addEventListener('click', closeForm);
+  form.addEventListener('submit', onFormSubmit);
 
-cancelButton.addEventListener('click', () => {
-  closeForm();
-});
+  hashtagInput.addEventListener('keydown', (evt) => {
+    evt.stopPropagation();
+  });
 
-hashtagInput.addEventListener('keydown', (evt) => {
-  evt.stopPropagation();
-});
+  commentInput.addEventListener('keydown', (evt) => {
+    evt.stopPropagation();
+  });
 
-commentInput.addEventListener('keydown', (evt) => {
-  evt.stopPropagation();
-});
-
-hashtagInput.addEventListener('input', () => {
-  pristine.validate(hashtagInput);
-});
-
-commentInput.addEventListener('input', () => {
-  pristine.validate(commentInput);
-});
-
-form.addEventListener('submit', (evt) => {
-  const isValid = pristine.validate();
-
-  if (!isValid) {
-    evt.preventDefault();
-
+  hashtagInput.addEventListener('input', () => {
     pristine.validate(hashtagInput);
-    pristine.validate(commentInput);
-  } else {
-    console.log('Форма валидна, можно отправлять');
-  }
-});
+  });
 
-export { openForm, closeForm };
+  commentInput.addEventListener('input', () => {
+    pristine.validate(commentInput);
+  });
+};
+
+export { initForm, closeForm };
