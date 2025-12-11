@@ -60,7 +60,7 @@ const effectLevelValue = document.querySelector('.effect-level__value');
 
 let currentScale = SCALE_DEFAULT;
 let currentEffect = DEFAULT_EFFECT;
-
+let isSliderInitialized = false;
 const updateScale = (value) => {
   currentScale = value;
   scaleControl.value = `${value}%`;
@@ -106,6 +106,10 @@ const initSlider = () => {
     return;
   }
 
+  if (isSliderInitialized) {
+    return;
+  }
+
   noUiSlider.create(effectLevelSlider, {
     range: {
       min: 0,
@@ -119,6 +123,8 @@ const initSlider = () => {
       from: (value) => parseFloat(value),
     },
   });
+
+  isSliderInitialized = true;
 
   effectLevelSlider.noUiSlider.on('update', () => {
     const value = effectLevelSlider.noUiSlider.get();
@@ -170,19 +176,28 @@ const resetImageEditor = () => {
   effectLevelContainer.classList.add('hidden');
   imagePreview.style.filter = 'none';
 
-  if (effectLevelSlider.noUiSlider) {
+  if (isSliderInitialized && effectLevelSlider.noUiSlider) {
     resetEffect();
   }
 };
 
 const initImageEditor = () => {
   updateScale(SCALE_DEFAULT);
-  scaleSmaller.addEventListener('click', onScaleSmallerClick);
-  scaleBigger.addEventListener('click', onScaleBiggerClick);
+  if (!scaleSmaller.hasEventListener) {
+    scaleSmaller.addEventListener('click', onScaleSmallerClick);
+    scaleSmaller.hasEventListener = true;
+  }
+  if (!scaleBigger.hasEventListener) {
+    scaleBigger.addEventListener('click', onScaleBiggerClick);
+    scaleBigger.hasEventListener = true;
+  }
 
   initSlider();
 
-  effectsList.addEventListener('change', onEffectChange);
+  if (!effectsList.hasEventListener) {
+    effectsList.addEventListener('change', onEffectChange);
+    effectsList.hasEventListener = true;
+  }
 
   effectLevelContainer.classList.add('hidden');
 };
