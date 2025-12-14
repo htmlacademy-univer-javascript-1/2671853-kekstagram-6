@@ -39,11 +39,11 @@ function getFilteredPhotos() {
 
 function clearPictures() {
   const pictures = document.querySelectorAll('.picture');
-  pictures.forEach(picture => picture.remove());
+  pictures.forEach((picture) => picture.remove());
 }
 
 function updateActiveButton(activeButtonId) {
-  filterButtons.forEach(button => {
+  filterButtons.forEach((button) => {
     button.classList.toggle('img-filters__button--active', button.id === activeButtonId);
   });
 }

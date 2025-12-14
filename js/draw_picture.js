@@ -5,7 +5,7 @@ const pictureTemplate = document.querySelector('#picture').content.querySelector
 
 function renderPictures(data) {
   const existingPictures = picturesContainer.querySelectorAll('.picture');
-  existingPictures.forEach(picture => picture.remove());
+  existingPictures.forEach((picture) => picture.remove());
 
   const fragment = document.createDocumentFragment();
 
