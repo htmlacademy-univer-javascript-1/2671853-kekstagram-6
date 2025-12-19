@@ -1,6 +1,6 @@
 import { initImageEditor, resetImageEditor } from './image-editor.js';
 import { sendPhoto } from './api.js';
-import { showSuccess, showError} from './messages.js';
+import { showSuccess, showError } from './messages.js';
 
 const MAX_HASHTAG_COUNT = 5;
 const MAX_HASHTAG_LENGTH = 20;
@@ -15,6 +15,8 @@ const submitButton = document.querySelector('.img-upload__submit');
 const body = document.body;
 const hashtagInput = form.querySelector('.text__hashtags');
 const commentInput = form.querySelector('.text__description');
+const imagePreview = document.querySelector('.img-upload__preview img');
+const DEFAULT_IMAGE_SRC = 'img/upload-default-image.jpg';
 
 const pristine = new Pristine(form, {
   classTo: 'img-upload__field-wrapper',
@@ -24,6 +26,52 @@ const pristine = new Pristine(form, {
   errorTextTag: 'div',
   errorTextClass: 'img-upload__error'
 });
+
+function loadUserImage(file) {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      reject(new Error('Файл должен быть изображением (JPEG, PNG, GIF и т.д.)'));
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.addEventListener('load', () => {
+      imagePreview.src = reader.result;
+      resolve();
+    });
+
+    reader.addEventListener('error', () => {
+      reject(new Error('Не удалось прочитать файл'));
+    });
+
+    reader.readAsDataURL(file);
+  });
+}
+
+const onFileInputChange = async (evt) => {
+  const file = evt.target.files[0];
+
+  if (!file) {
+    return;
+  }
+
+  try {
+    submitButton.disabled = true;
+    submitButton.textContent = 'Загружаем...';
+
+    await loadUserImage(file);
+    openForm();
+  } catch (error) {
+    showError(error.message, 'Выбрать другой файл', () => {
+      fileInput.value = '';
+      fileInput.click();
+    });
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = 'Опубликовать';
+  }
+};
 
 const validateHashtags = (value) => {
   const inputText = value.trim();
@@ -159,14 +207,10 @@ const onFormSubmit = async (evt) => {
 
   try {
     await sendPhoto(formData);
-
     showSuccess();
     closeForm();
-
   } catch (error) {
-
     showError(error.message, 'Попробовать ещё раз');
-
   } finally {
     unblockSubmitButton();
   }
@@ -203,10 +247,15 @@ const closeForm = () => {
   fileInput.value = '';
   pristine.reset();
   resetImageEditor();
+
+  // Сбрасываем изображение на дефолтное
+  imagePreview.src = DEFAULT_IMAGE_SRC;
 };
 
 const initForm = () => {
-  fileInput.addEventListener('change', openForm);
+  // Заменяем обработчик на новую функцию
+  fileInput.addEventListener('change', onFileInputChange);
+
   cancelButton.addEventListener('click', closeForm);
   form.addEventListener('submit', onFormSubmit);
 
