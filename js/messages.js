@@ -1,82 +1,69 @@
-const successTemplate = document.querySelector('#success');
-const errorTemplate = document.querySelector('#error');
-const messageTemplate = document.querySelector('#messages');
+const SUCCESS_TEMPLATE = document.querySelector('#success');
+const ERROR_TEMPLATE = document.querySelector('#error');
+const MESSAGE_TEMPLATE = document.querySelector('#messages');
+
+const OVERLAY_Z_INDEX = '1000';
+const OVERLAY_BACKGROUND = 'rgba(0, 0, 0, 0.8)';
+const ESC_KEY = 'Escape';
 
 const createMessage = (template, className) =>
   template.content.cloneNode(true).querySelector(`.${className}`);
 
-const showSuccess = () => {
+const showOverlayMessage = ({ element, innerSelector, onClose }) => {
+  const innerElement = element.querySelector(innerSelector);
+
   const onDocumentKeydown = (evt) => {
-    if (evt.key === 'Escape') {
+    if (evt.key === ESC_KEY) {
       evt.preventDefault();
       evt.stopPropagation();
-      closeSuccess();
+      close();
     }
   };
 
   const onDocumentClick = (evt) => {
-    const successBlock = successElement.querySelector('.success__inner');
-    if (successBlock && !successBlock.contains(evt.target)) {
-      closeSuccess();
+    if (innerElement && !innerElement.contains(evt.target)) {
+      close();
     }
   };
 
-  const closeSuccess = () => {
-    successElement.remove();
+  const close = () => {
+    element.remove();
     document.removeEventListener('keydown', onDocumentKeydown);
     document.removeEventListener('click', onDocumentClick);
+    onClose?.();
   };
 
-  const successElement = createMessage(successTemplate, 'success');
-  document.body.append(successElement);
-
-  const closeButton = successElement.querySelector('.success__button');
-
-  closeButton.addEventListener('click', closeSuccess);
-  document.addEventListener('keydown', onDocumentKeydown);
+  document.addEventListener('keydown', onDocumentKeydown, true);
 
   setTimeout(() => {
     document.addEventListener('click', onDocumentClick);
   }, 0);
+
+  return close;
+};
+
+const showSuccess = () => {
+  const successElement = createMessage(SUCCESS_TEMPLATE, 'success');
+  document.body.append(successElement);
+
+  const closeButton = successElement.querySelector('.success__button');
+
+  const close = showOverlayMessage({
+    element: successElement,
+    innerSelector: '.success__inner',
+  });
+
+  closeButton.addEventListener('click', close);
 };
 
 const showError = (message, buttonText = 'Загрузить другой файл', onRetry = null) => {
-  const onDocumentKeydown = (evt) => {
-    if (evt.key === 'Escape') {
-      evt.preventDefault();
-      evt.stopPropagation();
-      closeError();
-    }
-  };
-
-  const onDocumentClick = (evt) => {
-    const errorBlock = errorElement.querySelector('.error__inner');
-    if (errorBlock && !errorBlock.contains(evt.target)) {
-      closeError();
-    }
-  };
-
-  const closeError = () => {
-    errorElement.remove();
-    document.removeEventListener('keydown', onDocumentKeydown);
-    document.removeEventListener('click', onDocumentClick);
-
-    if (onRetry) {
-      onRetry();
-    }
-  };
-
-  const errorElement = createMessage(errorTemplate, 'error');
+  const errorElement = createMessage(ERROR_TEMPLATE, 'error');
 
   const titleElement = errorElement.querySelector('.error__title');
   const buttonElement = errorElement.querySelector('.error__button');
 
   if (titleElement && message) {
     titleElement.textContent = message;
-    titleElement.style.whiteSpace = 'pre-line';
-    titleElement.style.wordBreak = 'break-word';
-    titleElement.style.overflowWrap = 'break-word';
-    titleElement.style.lineHeight = '1.5';
   }
 
   if (buttonElement && buttonText) {
@@ -84,38 +71,37 @@ const showError = (message, buttonText = 'Загрузить другой фай
   }
 
   errorElement.style.position = 'fixed';
-  errorElement.style.top = '0';
-  errorElement.style.left = '0';
-  errorElement.style.width = '100%';
-  errorElement.style.height = '100%';
-  errorElement.style.zIndex = '1000';
-
-  const computedStyle = window.getComputedStyle(errorElement);
-  if (!computedStyle.backgroundColor || computedStyle.backgroundColor === 'rgba(0, 0, 0, 0)') {
-    errorElement.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-  }
+  errorElement.style.inset = '0';
+  errorElement.style.zIndex = OVERLAY_Z_INDEX;
+  errorElement.style.backgroundColor = OVERLAY_BACKGROUND;
 
   document.body.append(errorElement);
 
-  buttonElement.addEventListener('click', closeError);
-  document.addEventListener('keydown', onDocumentKeydown);
+  const close = showOverlayMessage({
+    element: errorElement,
+    innerSelector: '.error__inner',
+    onClose: onRetry,
+  });
 
-  setTimeout(() => {
-    document.addEventListener('click', onDocumentClick);
-  }, 0);
+  buttonElement.addEventListener('click', close);
 };
 
 const showLoading = () => {
-  const loadingElement = createMessage(messageTemplate, 'img-upload__message');
+  const loadingElement = createMessage(MESSAGE_TEMPLATE, 'img-upload__message');
   loadingElement.classList.add('img-upload__message--loading');
-  document.body.appendChild(loadingElement);
+  document.body.append(loadingElement);
   return loadingElement;
 };
 
 const hideLoading = (loadingElement) => {
-  if (loadingElement && loadingElement.parentNode) {
+  if (loadingElement) {
     loadingElement.remove();
   }
 };
 
-export { showSuccess, showError, showLoading, hideLoading };
+export {
+  showSuccess,
+  showError,
+  showLoading,
+  hideLoading
+};

@@ -3,149 +3,124 @@ const SCALE_MIN = 25;
 const SCALE_MAX = 100;
 const SCALE_DEFAULT = 100;
 
+const SLIDER_RANGE_MIN = 0;
+const SLIDER_RANGE_MAX = 100;
+const SLIDER_START = 100;
+
+const DEFAULT_EFFECT = 'none';
+const HIDDEN_CLASS = 'hidden';
+
 const EFFECTS = {
-  none: {
-    min: 0,
-    max: 100,
-    step: 1,
-    unit: '',
-  },
+  none: null,
   chrome: {
     min: 0,
     max: 1,
     step: 0.1,
-    unit: '',
     filter: 'grayscale',
+    unit: '',
   },
   sepia: {
     min: 0,
     max: 1,
     step: 0.1,
-    unit: '',
     filter: 'sepia',
+    unit: '',
   },
   marvin: {
     min: 0,
     max: 100,
     step: 1,
-    unit: '%',
     filter: 'invert',
+    unit: '%',
   },
   phobos: {
     min: 0,
     max: 3,
     step: 0.1,
-    unit: 'px',
     filter: 'blur',
+    unit: 'px',
   },
   heat: {
     min: 1,
     max: 3,
     step: 0.1,
-    unit: '',
     filter: 'brightness',
+    unit: '',
   },
 };
 
-const DEFAULT_EFFECT = 'none';
-
-const scaleControl = document.querySelector('.scale__control--value');
-const scaleSmaller = document.querySelector('.scale__control--smaller');
-const scaleBigger = document.querySelector('.scale__control--bigger');
-const imagePreview = document.querySelector('.img-upload__preview img');
-const effectsList = document.querySelector('.effects__list');
-const effectLevelContainer = document.querySelector('.img-upload__effect-level');
-const effectLevelSlider = document.querySelector('.effect-level__slider');
-const effectLevelValue = document.querySelector('.effect-level__value');
+const scaleValueElement = document.querySelector('.scale__control--value');
+const scaleSmallerElement = document.querySelector('.scale__control--smaller');
+const scaleBiggerElement = document.querySelector('.scale__control--bigger');
+const imagePreviewElement = document.querySelector('.img-upload__preview img');
+const effectsListElement = document.querySelector('.effects__list');
+const effectLevelContainerElement = document.querySelector('.img-upload__effect-level');
+const effectLevelSliderElement = document.querySelector('.effect-level__slider');
+const effectLevelValueElement = document.querySelector('.effect-level__value');
 
 let currentScale = SCALE_DEFAULT;
 let currentEffect = DEFAULT_EFFECT;
 let isSliderInitialized = false;
+
 const updateScale = (value) => {
   currentScale = value;
-  scaleControl.value = `${value}%`;
-  imagePreview.style.transform = `scale(${value / 100})`;
+  scaleValueElement.value = `${value}%`;
+  imagePreviewElement.style.transform = `scale(${value / 100})`;
 };
 
 const onScaleSmallerClick = () => {
-  const newValue = Math.max(currentScale - SCALE_STEP, SCALE_MIN);
-  updateScale(newValue);
+  updateScale(Math.max(currentScale - SCALE_STEP, SCALE_MIN));
 };
 
 const onScaleBiggerClick = () => {
-  const newValue = Math.min(currentScale + SCALE_STEP, SCALE_MAX);
-  updateScale(newValue);
+  updateScale(Math.min(currentScale + SCALE_STEP, SCALE_MAX));
 };
 
-const applyEffect = (sliderValue) => {
-  const effect = EFFECTS[currentEffect];
+const hideSlider = () => {
+  effectLevelContainerElement.classList.add(HIDDEN_CLASS);
+};
 
-  if (currentEffect === 'none') {
-    imagePreview.style.filter = 'none';
+const showSlider = () => {
+  effectLevelContainerElement.classList.remove(HIDDEN_CLASS);
+};
+
+const applyEffect = (value) => {
+  if (currentEffect === DEFAULT_EFFECT) {
+    imagePreviewElement.style.filter = 'none';
     return;
   }
 
-  const percentage = sliderValue / 100;
-  let filterValue;
+  const effect = EFFECTS[currentEffect];
+  let filterValue = value;
 
   if (effect.filter === 'grayscale' || effect.filter === 'sepia') {
-    filterValue = percentage.toFixed(1);
-  } else if (effect.filter === 'invert') {
-    filterValue = `${Math.round(percentage * 100)}%`;
-  } else if (effect.filter === 'blur') {
-    filterValue = `${(percentage * 3).toFixed(1)}px`;
-  } else if (effect.filter === 'brightness') {
-    filterValue = (1 + percentage * 2).toFixed(1);
+    filterValue = value.toFixed(1);
   }
 
-  imagePreview.style.filter = `${effect.filter}(${filterValue})`;
+  if (effect.filter === 'invert') {
+    filterValue = `${value}%`;
+  }
+
+  if (effect.filter === 'blur') {
+    filterValue = `${value}px`;
+  }
+
+  imagePreviewElement.style.filter = `${effect.filter}(${filterValue})`;
 };
 
-const initSlider = () => {
-  if (!effectLevelSlider || !noUiSlider) {
-    return;
-  }
+const updateSliderForEffect = () => {
+  const effect = EFFECTS[currentEffect];
 
-  if (isSliderInitialized) {
-    return;
-  }
-
-  noUiSlider.create(effectLevelSlider, {
+  effectLevelSliderElement.noUiSlider.updateOptions({
     range: {
-      min: 0,
-      max: 100,
+      min: effect.min,
+      max: effect.max,
     },
-    start: 100,
-    step: 1,
-    connect: 'lower',
-    format: {
-      to: (value) => Number.isInteger(value) ? value : value.toFixed(1),
-      from: (value) => parseFloat(value),
-    },
+    start: effect.max,
+    step: effect.step,
   });
 
-  isSliderInitialized = true;
-
-  effectLevelSlider.noUiSlider.on('update', () => {
-    const value = effectLevelSlider.noUiSlider.get();
-    effectLevelValue.value = value;
-    applyEffect(value);
-  });
-};
-
-const resetEffect = () => {
-  if (effectLevelSlider.noUiSlider) {
-    effectLevelSlider.noUiSlider.updateOptions({
-      range: {
-        min: 0,
-        max: 100,
-      },
-      start: 100,
-      step: 1,
-    });
-    effectLevelSlider.noUiSlider.set(100);
-  }
-  applyEffect(100);
+  effectLevelSliderElement.noUiSlider.set(effect.max);
 };
 
 const onEffectChange = (evt) => {
@@ -155,13 +130,42 @@ const onEffectChange = (evt) => {
 
   currentEffect = evt.target.value;
 
-  if (currentEffect === 'none') {
-    effectLevelContainer.classList.add('hidden');
-    imagePreview.style.filter = 'none';
-  } else {
-    effectLevelContainer.classList.remove('hidden');
-    resetEffect();
+  if (currentEffect === DEFAULT_EFFECT) {
+    hideSlider();
+    imagePreviewElement.style.filter = 'none';
+    effectLevelValueElement.value = '';
+    return;
   }
+
+  showSlider();
+  updateSliderForEffect();
+  applyEffect(EFFECTS[currentEffect].max);
+  effectLevelValueElement.value = EFFECTS[currentEffect].max;
+};
+
+const initSlider = () => {
+  if (isSliderInitialized || !effectLevelSliderElement || !window.noUiSlider) {
+    return;
+  }
+
+  noUiSlider.create(effectLevelSliderElement, {
+    range: {
+      min: SLIDER_RANGE_MIN,
+      max: SLIDER_RANGE_MAX,
+    },
+    start: SLIDER_START,
+    step: 1,
+    connect: 'lower',
+  });
+
+  effectLevelSliderElement.noUiSlider.on('update', () => {
+    const value = Number(effectLevelSliderElement.noUiSlider.get());
+    effectLevelValueElement.value = value;
+    applyEffect(value);
+  });
+
+  isSliderInitialized = true;
+  hideSlider();
 };
 
 const resetImageEditor = () => {
@@ -173,33 +177,26 @@ const resetImageEditor = () => {
     noneEffectRadio.checked = true;
   }
 
-  effectLevelContainer.classList.add('hidden');
-  imagePreview.style.filter = 'none';
+  hideSlider();
+  imagePreviewElement.style.filter = 'none';
+  effectLevelValueElement.value = '';
 
-  if (isSliderInitialized && effectLevelSlider.noUiSlider) {
-    resetEffect();
+  if (isSliderInitialized) {
+    effectLevelSliderElement.noUiSlider.set(SLIDER_START);
   }
 };
 
 const initImageEditor = () => {
   updateScale(SCALE_DEFAULT);
-  if (!scaleSmaller.hasEventListener) {
-    scaleSmaller.addEventListener('click', onScaleSmallerClick);
-    scaleSmaller.hasEventListener = true;
-  }
-  if (!scaleBigger.hasEventListener) {
-    scaleBigger.addEventListener('click', onScaleBiggerClick);
-    scaleBigger.hasEventListener = true;
-  }
-
   initSlider();
 
-  if (!effectsList.hasEventListener) {
-    effectsList.addEventListener('change', onEffectChange);
-    effectsList.hasEventListener = true;
-  }
+  scaleSmallerElement.removeEventListener('click', onScaleSmallerClick);
+  scaleBiggerElement.removeEventListener('click', onScaleBiggerClick);
+  effectsListElement.removeEventListener('change', onEffectChange);
 
-  effectLevelContainer.classList.add('hidden');
+  scaleSmallerElement.addEventListener('click', onScaleSmallerClick);
+  scaleBiggerElement.addEventListener('click', onScaleBiggerClick);
+  effectsListElement.addEventListener('change', onEffectChange);
 };
 
 export { initImageEditor, resetImageEditor };
