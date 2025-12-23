@@ -1,30 +1,33 @@
 import { openBigPicture } from './big-picture.js';
 
-const picturesContainer = document.querySelector('.pictures');
-const pictureTemplate = document.querySelector('#picture').content.querySelector('.picture');
+const picturesContainerElement = document.querySelector('.pictures');
+const pictureTemplateElement =
+  document.querySelector('#picture').content.querySelector('.picture');
 
-function renderPictures(data) {
-  const existingPictures = picturesContainer.querySelectorAll('.picture');
-  existingPictures.forEach((picture) => picture.remove());
+const renderPictures = (photos) => {
+  picturesContainerElement
+    .querySelectorAll('.picture')
+    .forEach((picture) => picture.remove());
 
   const fragment = document.createDocumentFragment();
 
-  data.forEach((photo) => {
-    const element = pictureTemplate.cloneNode(true);
-    element.querySelector('.picture__img').src = photo.url;
-    element.querySelector('.picture__img').alt = photo.description || 'Фотография пользователя';
-    element.querySelector('.picture__likes').textContent = photo.likes;
-    element.querySelector('.picture__comments').textContent = photo.comments.length;
+  photos.forEach((photo) => {
+    const pictureElement = pictureTemplateElement.cloneNode(true);
 
-    element.addEventListener('click', (evt) => {
-      evt.preventDefault();
+    pictureElement.querySelector('.picture__img').src = photo.url;
+    pictureElement.querySelector('.picture__img').alt = photo.description;
+    pictureElement.querySelector('.picture__likes').textContent = photo.likes;
+    pictureElement.querySelector('.picture__comments').textContent =
+      photo.comments.length;
+
+    pictureElement.addEventListener('click', () => {
       openBigPicture(photo);
     });
 
-    fragment.appendChild(element);
+    fragment.appendChild(pictureElement);
   });
 
-  picturesContainer.appendChild(fragment);
-}
+  picturesContainerElement.appendChild(fragment);
+};
 
 export { renderPictures };
