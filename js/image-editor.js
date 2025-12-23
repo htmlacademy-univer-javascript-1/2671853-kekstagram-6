@@ -139,6 +139,8 @@ const onEffectChange = (evt) => {
 
   showSlider();
   updateSliderForEffect();
+  applyEffect(EFFECTS[currentEffect].max);
+  effectLevelValueElement.value = EFFECTS[currentEffect].max;
 };
 
 const initSlider = () => {
@@ -187,6 +189,10 @@ const resetImageEditor = () => {
 const initImageEditor = () => {
   updateScale(SCALE_DEFAULT);
   initSlider();
+
+  scaleSmallerElement.removeEventListener('click', onScaleSmallerClick);
+  scaleBiggerElement.removeEventListener('click', onScaleBiggerClick);
+  effectsListElement.removeEventListener('change', onEffectChange);
 
   scaleSmallerElement.addEventListener('click', onScaleSmallerClick);
   scaleBiggerElement.addEventListener('click', onScaleBiggerClick);

@@ -19,6 +19,7 @@ const bodyElement = document.body;
 const hashtagInputElement = formElement.querySelector('.text__hashtags');
 const commentInputElement = formElement.querySelector('.text__description');
 const imagePreviewElement = document.querySelector('.img-upload__preview img');
+const effectsPreviewElements = document.querySelectorAll('.effects__preview');
 
 const pristine = new Pristine(formElement, {
   classTo: 'img-upload__field-wrapper',
@@ -36,18 +37,14 @@ const loadUserImage = (file) =>
       return;
     }
 
-    const reader = new FileReader();
+    const imageUrl = URL.createObjectURL(file);
+    imagePreviewElement.src = imageUrl;
 
-    reader.addEventListener('load', () => {
-      imagePreviewElement.src = reader.result;
-      resolve();
+    effectsPreviewElements.forEach((element) => {
+      element.style.backgroundImage = `url(${imageUrl})`;
     });
 
-    reader.addEventListener('error', () => {
-      reject(new Error('Не удалось прочитать файл'));
-    });
-
-    reader.readAsDataURL(file);
+    resolve();
   });
 
 const validateHashtags = (value) => {
@@ -175,16 +172,14 @@ const onFileInputChange = async (evt) => {
   }
 
   try {
-    blockSubmitButton();
-    await loadUserImage(file);
     openForm();
+    await loadUserImage(file);
   } catch (error) {
+    closeForm();
     showError(error.message, 'Выбрать другой файл', () => {
       fileInputElement.value = '';
       fileInputElement.click();
     });
-  } finally {
-    unblockSubmitButton();
   }
 };
 

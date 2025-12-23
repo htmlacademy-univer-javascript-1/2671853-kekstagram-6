@@ -42,7 +42,7 @@ const renderNextComments = () => {
   });
 
   shownCommentsCount += commentsSlice.length;
-  commentCountElement.textContent = `${shownCommentsCount} из ${currentComments.length} комментариев`;
+  commentCountElement.innerHTML = `<span class="social__comment-shown-count">${shownCommentsCount}</span> из <span class="comments-count social__comment-total-count">${currentComments.length}</span> комментариев`;
 
   if (shownCommentsCount >= currentComments.length) {
     commentsLoaderElement.classList.add('hidden');

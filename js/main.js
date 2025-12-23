@@ -1,7 +1,6 @@
 import { getPhotos } from './api.js';
 import { renderPictures } from './draw_picture.js';
 import { initForm } from './form.js';
-import { showError } from './messages.js';
 import { initFilters } from './filters.js';
 
 const loadAndRenderPhotos = async () => {
@@ -10,9 +9,23 @@ const loadAndRenderPhotos = async () => {
     renderPictures(photos);
     initFilters(photos);
   } catch (error) {
-    showError(error.message, 'Загрузить ещё раз', () => {
-      loadAndRenderPhotos();
-    });
+    const alertContainer = document.createElement('div');
+    alertContainer.classList.add('data-error');
+    alertContainer.style.zIndex = '100';
+    alertContainer.style.position = 'absolute';
+    alertContainer.style.left = '0';
+    alertContainer.style.top = '0';
+    alertContainer.style.right = '0';
+    alertContainer.style.padding = '10px 3px';
+    alertContainer.style.fontSize = '30px';
+    alertContainer.style.textAlign = 'center';
+    alertContainer.style.backgroundColor = 'red';
+    alertContainer.textContent = error.message;
+    document.body.append(alertContainer);
+
+    setTimeout(() => {
+      alertContainer.remove();
+    }, 5000);
   }
 };
 
