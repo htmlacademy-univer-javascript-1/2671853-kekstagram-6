@@ -35,9 +35,7 @@ const showOverlayMessage = ({ element, innerSelector, onClose }) => {
 
   document.addEventListener('keydown', onDocumentKeydown, true);
 
-  setTimeout(() => {
-    document.addEventListener('click', onDocumentClick);
-  }, 0);
+  document.addEventListener('click', onDocumentClick);
 
   return close;
 };

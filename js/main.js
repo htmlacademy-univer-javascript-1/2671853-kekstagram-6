@@ -3,6 +3,8 @@ import { renderPictures } from './draw_picture.js';
 import { initForm } from './form.js';
 import { initFilters } from './filters.js';
 
+const ALERT_DISPLAY_TIME = 5000;
+
 const loadAndRenderPhotos = async () => {
   try {
     const photos = await getPhotos();
@@ -25,7 +27,7 @@ const loadAndRenderPhotos = async () => {
 
     setTimeout(() => {
       alertContainer.remove();
-    }, 5000);
+    }, ALERT_DISPLAY_TIME);
   }
 };
 

@@ -5,11 +5,11 @@ let currentComments = [];
 let shownCommentsCount = 0;
 
 const bigPictureElement = document.querySelector('.big-picture');
-const closeButtonElement = document.querySelector('#picture-cancel');
+const closeButtonElement = bigPictureElement.querySelector('#picture-cancel');
 const bodyElement = document.body;
-const commentsLoaderElement = document.querySelector('.comments-loader');
-const commentsListElement = document.querySelector('.social__comments');
-const commentCountElement = document.querySelector('.social__comment-count');
+const commentsLoaderElement = bigPictureElement.querySelector('.comments-loader');
+const commentsListElement = bigPictureElement.querySelector('.social__comments');
+const commentCountElement = bigPictureElement.querySelector('.social__comment-count');
 
 const createCommentElement = (comment) => {
   const commentElement = document.createElement('li');

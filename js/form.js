@@ -10,16 +10,16 @@ const DEFAULT_IMAGE_SRC = 'img/upload-default-image.jpg';
 const HASHTAG_REGEX = /^#[a-zа-яё0-9]{1,19}$/i;
 
 const formElement = document.querySelector('.img-upload__form');
-const fileInputElement = document.querySelector('.img-upload__input');
+const fileInputElement = formElement.querySelector('.img-upload__input');
 const overlayElement = document.querySelector('.img-upload__overlay');
-const cancelButtonElement = document.querySelector('.img-upload__cancel');
-const submitButtonElement = document.querySelector('.img-upload__submit');
+const cancelButtonElement = overlayElement.querySelector('.img-upload__cancel');
+const submitButtonElement = overlayElement.querySelector('.img-upload__submit');
 const bodyElement = document.body;
 
 const hashtagInputElement = formElement.querySelector('.text__hashtags');
 const commentInputElement = formElement.querySelector('.text__description');
-const imagePreviewElement = document.querySelector('.img-upload__preview img');
-const effectsPreviewElements = document.querySelectorAll('.effects__preview');
+const imagePreviewElement = overlayElement.querySelector('.img-upload__preview img');
+const effectsPreviewElements = overlayElement.querySelectorAll('.effects__preview');
 
 const pristine = new Pristine(formElement, {
   classTo: 'img-upload__field-wrapper',
@@ -232,13 +232,21 @@ const onCommentInput = () => {
   pristine.validate(commentInputElement);
 };
 
+const onHashtagKeydown = (evt) => {
+  evt.stopPropagation();
+};
+
+const onCommentKeydown = (evt) => {
+  evt.stopPropagation();
+};
+
 const initForm = () => {
   fileInputElement.addEventListener('change', onFileInputChange);
   cancelButtonElement.addEventListener('click', closeForm);
   formElement.addEventListener('submit', onFormSubmit);
 
-  hashtagInputElement.addEventListener('keydown', stopPropagationHandler);
-  commentInputElement.addEventListener('keydown', stopPropagationHandler);
+  hashtagInputElement.addEventListener('keydown', onHashtagKeydown);
+  commentInputElement.addEventListener('keydown', onCommentKeydown);
 
   hashtagInputElement.addEventListener('input', onHashtagInput);
   commentInputElement.addEventListener('input', onCommentInput);
